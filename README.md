@@ -18,7 +18,7 @@ These expressions will seem familiar if you have used Grafana or Kibana.
 Example usage:
 
 ```go
-expr, _ := Parse("now-15m")
+expr, _ := datemath.Parse("now-15m")
 fmt.Println(t.Time(datemath.WithNow(now)))
 ```
 
