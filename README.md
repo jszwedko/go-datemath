@@ -24,3 +24,7 @@ fmt.Println(t.Time(datemath.WithNow(now)))
 ```
 
 See [package documentation](http://godoc.org/github.com/timberio/go-datemath) for usage and more examples.
+
+## Development / Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).
