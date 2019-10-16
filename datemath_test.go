@@ -15,6 +15,7 @@ func TestParseAndEvaluate(t *testing.T) {
 		in  string
 		out string
 		err error
+		businessDayFunc func(time.Time) bool
 
 		now      string
 		location *time.Location
@@ -218,6 +219,21 @@ func TestParseAndEvaluate(t *testing.T) {
 			out: "2014-05-30T17:21:00.000Z",
 		},
 
+		// business days
+		{
+			now: "2014-11-18T14:27:32.000Z",
+			in:  "now+5b",
+			out: "2014-11-25T14:27:32.000Z",
+		},
+		{
+			now: "2014-12-23T14:27:32.000Z",
+			in:  "now+2b",
+			businessDayFunc: func(t time.Time) bool {
+				return t.Format("20060102") != "20141225"
+			},
+			out: "2014-12-26T14:27:32.000Z",
+		},
+
 		// errors
 		{
 			in:  "2014-05-35T20:21:21Z",
@@ -243,7 +259,7 @@ func TestParseAndEvaluate(t *testing.T) {
 				location = tt.location
 			}
 
-			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location))
+			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location), datemath.WithBusinessDayFunc(tt.businessDayFunc))
 			switch {
 			case err == nil && tt.err != nil:
 				t.Errorf("ParseAndEvaluate(%+v) returned no error, expected error %q", tt.in, tt.err)

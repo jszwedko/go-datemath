@@ -88,7 +88,7 @@ yystart1:
 		goto yystate7
 	case l.current == ':':
 		goto yystate9
-	case l.current == 'H' || l.current == 'M' || l.current == 'd' || l.current == 'h' || l.current == 'm' || l.current == 's' || l.current == 'w' || l.current == 'y':
+	case l.current == 'H' || l.current == 'M' || l.current == 'b' || l.current == 'd' || l.current == 'h' || l.current == 'm' || l.current == 's' || l.current == 'w' || l.current == 'y':
 		goto yystate10
 	case l.current == 'T':
 		goto yystate11
@@ -102,7 +102,7 @@ yystart1:
 		goto yystate16
 	case l.current >= '0' && l.current <= '9':
 		goto yystate8
-	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= '*' || l.current == ',' || l.current >= ';' && l.current <= 'G' || l.current >= 'I' && l.current <= 'L' || l.current >= 'N' && l.current <= 'S' || l.current >= 'U' && l.current <= 'Y' || l.current >= '[' && l.current <= 'c' || l.current >= 'e' && l.current <= 'g' || l.current >= 'i' && l.current <= 'l' || l.current >= 'o' && l.current <= 'r' || l.current >= 't' && l.current <= 'v' || l.current == 'x' || l.current == 'z' || l.current == '{' || l.current >= '}' && l.current <= 'ÿ':
+	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= '*' || l.current == ',' || l.current >= ';' && l.current <= 'G' || l.current >= 'I' && l.current <= 'L' || l.current >= 'N' && l.current <= 'S' || l.current >= 'U' && l.current <= 'Y' || l.current >= '[' && l.current <= 'a' || l.current == 'c' || l.current >= 'e' && l.current <= 'g' || l.current >= 'i' && l.current <= 'l' || l.current >= 'o' && l.current <= 'r' || l.current >= 't' && l.current <= 'v' || l.current == 'x' || l.current == 'z' || l.current == '{' || l.current >= '}' && l.current <= 'ÿ':
 		goto yystate3
 	}
 
@@ -225,7 +225,7 @@ yyrule7: // "/"
 
 		return tBACKSLASH
 	}
-yyrule8: // [yMwdhHms]
+yyrule8: // [yMwdbhHms]
 	{
 
 		switch l.buf[0] {
@@ -235,6 +235,8 @@ yyrule8: // [yMwdhHms]
 			lval.unit = timeUnitMonth
 		case 'w':
 			lval.unit = timeUnitWeek
+		case 'b':
+			lval.unit = timeUnitBusinessDay
 		case 'd':
 			lval.unit = timeUnitDay
 		case 'h', 'H':

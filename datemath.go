@@ -21,6 +21,7 @@ The supported time units are:
 	M Months
 	w Weeks
 	d Days
+	b Business Days (excludes Saturday and Sunday by default, use WithBusinessDayFunc to override)
 	h Hours
 	H Hours
 	m Minutes
@@ -53,13 +54,14 @@ var missingTimeZone = time.FixedZone("MISSING", 0)
 type timeUnit rune
 
 const (
-	timeUnitYear   = timeUnit('y')
-	timeUnitMonth  = timeUnit('M')
-	timeUnitWeek   = timeUnit('w')
-	timeUnitDay    = timeUnit('d')
-	timeUnitHour   = timeUnit('h')
-	timeUnitMinute = timeUnit('m')
-	timeUnitSecond = timeUnit('s')
+	timeUnitYear        = timeUnit('y')
+	timeUnitMonth       = timeUnit('M')
+	timeUnitWeek        = timeUnit('w')
+	timeUnitDay         = timeUnit('d')
+	timeUnitBusinessDay = timeUnit('b')
+	timeUnitHour        = timeUnit('h')
+	timeUnitMinute      = timeUnit('m')
+	timeUnitSecond      = timeUnit('s')
 )
 
 func (u timeUnit) String() string {
@@ -128,6 +130,8 @@ type Options struct {
 	// Use this weekday as the start of the week
 	// Defaults to time.Monday
 	StartOfWeek time.Weekday
+
+	BusinessDayFunc func(time.Time) bool
 }
 
 // WithNow use the given time as "now"
@@ -149,6 +153,17 @@ func WithLocation(l *time.Location) func(*Options) {
 	return func(o *Options) {
 		o.Location = l
 	}
+}
+
+// WithBusinessDayFunc use the given fn to check if a day is a business day
+func WithBusinessDayFunc(fn func(time.Time) bool) func(*Options) {
+	return func(o *Options) {
+		o.BusinessDayFunc = fn
+	}
+}
+
+func isNotWeekend(t time.Time) bool {
+	return t.Weekday() != time.Saturday && t.Weekday() != time.Sunday
 }
 
 // Time evaluate the expression with the given options to get the time it represents
@@ -222,7 +237,7 @@ func anchorDate(t time.Time) func(opts Options) time.Time {
 type timeAdjuster func(time.Time, Options) time.Time
 
 func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
-	return func(t time.Time, _ Options) time.Time {
+	return func(t time.Time, options Options) time.Time {
 		switch u {
 		case timeUnitYear:
 			return t.AddDate(factor, 0, 0)
@@ -232,6 +247,23 @@ func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
 			return t.AddDate(0, 0, 7*factor)
 		case timeUnitDay:
 			return t.AddDate(0, 0, factor)
+		case timeUnitBusinessDay:
+
+			fn := options.BusinessDayFunc
+			if fn == nil {
+				fn = isNotWeekend
+			}
+
+			for factor > 0 {
+				t = t.AddDate(0, 0, 1)
+				for !fn(t) {
+					t = t.AddDate(0, 0, 1)
+				}
+				factor--
+			}
+
+			return t
+
 		case timeUnitHour:
 			return t.Add(time.Duration(factor) * time.Hour)
 		case timeUnitMinute:
