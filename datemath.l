@@ -109,7 +109,7 @@ eof \0
       lval.unit = timeUnitWeek
     case 'b':
       lval.unit = timeUnitBusinessDay
-	case 'd':
+    case 'd':
       lval.unit = timeUnitDay
     case 'h', 'H':
       lval.unit = timeUnitHour
