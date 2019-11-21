@@ -226,6 +226,11 @@ func TestParseAndEvaluate(t *testing.T) {
 			out: "2014-11-25T14:27:32.000Z",
 		},
 		{
+			now: "2014-11-18T14:27:32.000Z",
+			in:  "now-5b",
+			out: "2014-11-11T14:27:32.000Z",
+		},
+		{
 			now: "2014-12-23T14:27:32.000Z",
 			in:  "now+2b",
 			businessDayFunc: func(t time.Time) bool {
