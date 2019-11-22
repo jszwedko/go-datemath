@@ -254,23 +254,16 @@ func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
 				fn = isNotWeekend
 			}
 
+			increment := 1
 			if factor < 0 {
-				for factor < 0 {
-					t = t.AddDate(0, 0, -1)
-					for !fn(t) {
-						t = t.AddDate(0, 0, -1)
-					}
-					factor++
-				}
-			} else {
-				for factor > 0 {
-					t = t.AddDate(0, 0, 1)
-					for !fn(t) {
-						t = t.AddDate(0, 0, 1)
-					}
-					factor--
-				}
+				increment = -1
+			}
 
+			for i := factor; i != 0; i -= increment {
+				t = t.AddDate(0, 0, increment)
+				for !fn(t) {
+					t = t.AddDate(0, 0, increment)
+				}
 			}
 
 			return t
