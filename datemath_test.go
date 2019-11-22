@@ -12,9 +12,9 @@ import (
 // https://github.com/elastic/elasticsearch/blob/2d3f3cd61ef4b218082609928d6ffc9d20c30ba4/server/src/test/java/org/elasticsearch/common/time/JavaDateMathParserTests.java#L35
 func TestParseAndEvaluate(t *testing.T) {
 	tests := []struct {
-		in  string
-		out string
-		err error
+		in              string
+		out             string
+		err             error
 		businessDayFunc func(time.Time) bool
 
 		now      string
