@@ -70,8 +70,6 @@ yystate0:
 
 	goto yystart1
 
-	goto yystate0 // silence unused label error
-	goto yystate1 // silence unused label error
 yystate1:
 	l.next()
 yystart1:
@@ -271,15 +269,27 @@ yyrule12: // {eof}
 		return eofCode
 	}
 yyrule13: // .
-	{
+	if true { // avoid go vet determining the below panic will not be reached
 
 		return tINVALID_TOKEN
 	}
 	panic("unreachable")
 
-	goto yyabort // silence unused label error
-
 yyabort: // no lexem recognized
+	//
+	// silence unused label errors for build and satisfy go vet reachability analysis
+	//
+	{
+		if false {
+			goto yyabort
+		}
+		if false {
+			goto yystate0
+		}
+		if false {
+			goto yystate1
+		}
+	}
 
 	// should never get here
 	panic("scanner internal error")
