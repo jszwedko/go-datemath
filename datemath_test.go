@@ -19,6 +19,7 @@ func TestParseAndEvaluate(t *testing.T) {
 
 		now      string
 		location *time.Location
+		roundUp  bool
 	}{
 
 		// basic dates
@@ -172,6 +173,13 @@ func TestParseAndEvaluate(t *testing.T) {
 			in:  "now/m",
 			out: "2014-11-18T14:27:00.000Z",
 		},
+		{
+			now:     "2014-11-18T14:27:32.000Z",
+			roundUp: true,
+
+			in:  "now/m",
+			out: "2014-11-18T14:27:59.999Z",
+		},
 
 		// epoch times
 		{
@@ -264,7 +272,7 @@ func TestParseAndEvaluate(t *testing.T) {
 				location = tt.location
 			}
 
-			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location), datemath.WithBusinessDayFunc(tt.businessDayFunc))
+			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location), datemath.WithBusinessDayFunc(tt.businessDayFunc), datemath.WithRoundUp(tt.roundUp))
 			switch {
 			case err == nil && tt.err != nil:
 				t.Errorf("ParseAndEvaluate(%+v) returned no error, expected error %q", tt.in, tt.err)
