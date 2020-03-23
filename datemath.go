@@ -131,6 +131,10 @@ type Options struct {
 	// Defaults to time.Monday
 	StartOfWeek time.Weekday
 
+	// Rounding to period should be done to the end of the period
+	// Defaults to false
+	RoundUp bool
+
 	BusinessDayFunc func(time.Time) bool
 }
 
@@ -152,6 +156,13 @@ func WithStartOfWeek(day time.Weekday) func(*Options) {
 func WithLocation(l *time.Location) func(*Options) {
 	return func(o *Options) {
 		o.Location = l
+	}
+}
+
+// WithRoundUp sets the rounding of time to the end of the period instead of the beginning
+func WithRoundUp(b bool) func(*Options) {
+	return func(o *Options) {
+		o.RoundUp = b
 	}
 }
 
@@ -281,7 +292,7 @@ func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
 }
 
 func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
-	return func(t time.Time, options Options) time.Time {
+	var roundDown = func(t time.Time, options Options) time.Time {
 		switch u {
 		case timeUnitYear:
 			return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
@@ -304,6 +315,13 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 		default:
 			panic(fmt.Sprintf("unknown time unit: %s", u))
 		}
+	}
+
+	return func(t time.Time, options Options) time.Time {
+		if options.RoundUp {
+			return addUnits(1, u)(roundDown(t, options), options).Add(-time.Millisecond)
+		}
+		return roundDown(t, options)
 	}
 }
 
