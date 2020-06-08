@@ -70,6 +70,8 @@ yystate0:
 
 	goto yystart1
 
+	goto yystate0 // silence unused label error
+	goto yystate1 // silence unused label error
 yystate1:
 	l.next()
 yystart1:
@@ -97,7 +99,7 @@ yystart1:
 	case l.current == 'n':
 		goto yystate13
 	case l.current == '|':
-		goto yystate16
+		goto yystate17
 	case l.current >= '0' && l.current <= '9':
 		goto yystate8
 	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= '*' || l.current == ',' || l.current >= ';' && l.current <= 'G' || l.current >= 'I' && l.current <= 'L' || l.current >= 'N' && l.current <= 'S' || l.current >= 'U' && l.current <= 'Y' || l.current >= '[' && l.current <= 'a' || l.current == 'c' || l.current >= 'e' && l.current <= 'g' || l.current >= 'i' && l.current <= 'l' || l.current >= 'o' && l.current <= 'r' || l.current >= 't' && l.current <= 'v' || l.current == 'x' || l.current == 'z' || l.current == '{' || l.current >= '}' && l.current <= 'ÿ':
@@ -110,7 +112,7 @@ yystate2:
 
 yystate3:
 	l.next()
-	goto yyrule13
+	goto yyrule14
 
 yystate4:
 	l.next()
@@ -152,7 +154,7 @@ yystate13:
 	l.next()
 	switch {
 	default:
-		goto yyrule13
+		goto yyrule14
 	case l.current == 'o':
 		goto yystate14
 	}
@@ -163,23 +165,29 @@ yystate14:
 	default:
 		goto yyabort
 	case l.current == 'w':
+		goto yystate16
+	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= 'v' || l.current >= 'x' && l.current <= 'ÿ':
 		goto yystate15
 	}
 
 yystate15:
 	l.next()
-	goto yyrule2
+	goto yyrule13
 
 yystate16:
 	l.next()
-	switch {
-	default:
-		goto yyrule13
-	case l.current == '|':
-		goto yystate17
-	}
+	goto yyrule2
 
 yystate17:
+	l.next()
+	switch {
+	default:
+		goto yyrule14
+	case l.current == '|':
+		goto yystate18
+	}
+
+yystate18:
 	l.next()
 	goto yyrule6
 
@@ -268,28 +276,21 @@ yyrule12: // {eof}
 
 		return eofCode
 	}
-yyrule13: // .
-	if true { // avoid go vet determining the below panic will not be reached
+yyrule13: // no.
+	{
+
+		return tINVALID_TOKEN
+	}
+yyrule14: // .
+	{
 
 		return tINVALID_TOKEN
 	}
 	panic("unreachable")
 
+	goto yyabort // silence unused label error
+
 yyabort: // no lexem recognized
-	//
-	// silence unused label errors for build and satisfy go vet reachability analysis
-	//
-	{
-		if false {
-			goto yyabort
-		}
-		if false {
-			goto yystate0
-		}
-		if false {
-			goto yystate1
-		}
-	}
 
 	// should never get here
 	panic("scanner internal error")
