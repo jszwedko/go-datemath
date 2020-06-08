@@ -254,6 +254,18 @@ func TestParseAndEvaluate(t *testing.T) {
 
 			err: fmt.Errorf(`day 35 out of bounds for month 5 at character 11 starting with "5"`),
 		},
+		{
+			in:  "npe",
+			err: fmt.Errorf(`syntax error: unexpected tINVALID_TOKEN, expecting tNOW or tDIGIT at character 2 starting with "n"`),
+		},
+		{
+			in:  "now-nope",
+			err: fmt.Errorf(`syntax error: unexpected tINVALID_TOKEN, expecting tUNIT at character 8 starting with "nop"`),
+		},
+		{
+			in:  "definitely-nope",
+			err: fmt.Errorf(`syntax error: unexpected tUNIT, expecting tNOW or tDIGIT at character 2 starting with "d"`),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.in, func(t *testing.T) {

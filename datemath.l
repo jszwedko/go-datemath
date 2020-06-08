@@ -82,7 +82,7 @@ eof \0
   return tDIGIT
 
 "now"
-  return tNOW
+	return tNOW
 
 "+"
 	return tPLUS
@@ -97,7 +97,7 @@ eof \0
 	return tPIPES
 
 "/"
-  return tBACKSLASH
+	return tBACKSLASH
 
 [yMwdbhHms]
   switch l.buf[0] {
@@ -134,8 +134,11 @@ eof \0
 {eof}
 	return eofCode
 
+no.
+	return tINVALID_TOKEN
+
 .
-  return tINVALID_TOKEN
+	return tINVALID_TOKEN
 
 %%
 
