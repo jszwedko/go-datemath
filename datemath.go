@@ -51,18 +51,20 @@ func init() {
 
 var missingTimeZone = time.FixedZone("MISSING", 0)
 
-type timeUnit rune
+type timeUnit string
 
 const (
-	timeUnitYear        = timeUnit('y')
-	timeUnitQuarter     = timeUnit('Q')
-	timeUnitMonth       = timeUnit('M')
-	timeUnitWeek        = timeUnit('w')
-	timeUnitDay         = timeUnit('d')
-	timeUnitBusinessDay = timeUnit('b')
-	timeUnitHour        = timeUnit('h')
-	timeUnitMinute      = timeUnit('m')
-	timeUnitSecond      = timeUnit('s')
+	timeUnitYear          = timeUnit('y')
+	timeUnitFiscalYear    = timeUnit("fy")
+	timeUnitQuarter       = timeUnit('Q')
+	timeUnitFiscalQuarter = timeUnit("fQ")
+	timeUnitMonth         = timeUnit('M')
+	timeUnitWeek          = timeUnit('w')
+	timeUnitDay           = timeUnit('d')
+	timeUnitBusinessDay   = timeUnit('b')
+	timeUnitHour          = timeUnit('h')
+	timeUnitMinute        = timeUnit('m')
+	timeUnitSecond        = timeUnit('s')
 )
 
 func (u timeUnit) String() string {
@@ -136,6 +138,8 @@ type Options struct {
 	// Defaults to false
 	RoundUp bool
 
+	StartOfFiscalYear time.Time
+
 	BusinessDayFunc func(time.Time) bool
 }
 
@@ -164,6 +168,14 @@ func WithLocation(l *time.Location) func(*Options) {
 func WithRoundUp(b bool) func(*Options) {
 	return func(o *Options) {
 		o.RoundUp = b
+	}
+}
+
+// WithStartOfFiscalYear sets the beginning of the fiscal year.
+// The year is ignored.
+func WithStartOfFiscalYear(t time.Time) func(*Options) {
+	return func(o *Options) {
+		o.StartOfFiscalYear = t
 	}
 }
 
@@ -251,9 +263,9 @@ type timeAdjuster func(time.Time, Options) time.Time
 func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
 	return func(t time.Time, options Options) time.Time {
 		switch u {
-		case timeUnitYear:
+		case timeUnitYear, timeUnitFiscalYear:
 			return t.AddDate(factor, 0, 0)
-		case timeUnitQuarter:
+		case timeUnitQuarter, timeUnitFiscalQuarter:
 			return t.AddDate(0, 3*factor, 0)
 		case timeUnitMonth:
 			return t.AddDate(0, factor, 0)
@@ -299,8 +311,19 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 		switch u {
 		case timeUnitYear:
 			return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
+		case timeUnitFiscalYear:
+			fy := options.StartOfFiscalYear
+			firstDay := time.Date(t.Year(), fy.Month(), fy.Day(), fy.Hour(), fy.Minute(), fy.Second(), fy.Nanosecond(), t.Location())
+			if firstDay.After(t) {
+				firstDay = firstDay.AddDate(-1, 0, 0)
+			}
+			return firstDay
 		case timeUnitQuarter:
 			firstOfQuarter := t.Month()/3*3 + 1
+			return time.Date(t.Year(), firstOfQuarter, 1, 0, 0, 0, 0, t.Location())
+		case timeUnitFiscalQuarter:
+			offset := (options.StartOfFiscalYear.Month()-1)%3 + 1
+			firstOfQuarter := t.Month()/3*3 + offset
 			return time.Date(t.Year(), firstOfQuarter, 1, 0, 0, 0, 0, t.Location())
 		case timeUnitMonth:
 			return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())

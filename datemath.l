@@ -124,6 +124,14 @@ eof \0
   }
 	return tUNIT
 
+"fy"
+  lval.unit = timeUnitFiscalYear
+  return tUNIT
+
+"fQ"
+  lval.unit = timeUnitFiscalQuarter
+  return tUNIT
+
 \.
 	return tDOT
 
