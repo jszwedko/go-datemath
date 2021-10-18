@@ -55,6 +55,7 @@ type timeUnit rune
 
 const (
 	timeUnitYear        = timeUnit('y')
+	timeUnitQuarter     = timeUnit('Q')
 	timeUnitMonth       = timeUnit('M')
 	timeUnitWeek        = timeUnit('w')
 	timeUnitDay         = timeUnit('d')
@@ -252,6 +253,8 @@ func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
 		switch u {
 		case timeUnitYear:
 			return t.AddDate(factor, 0, 0)
+		case timeUnitQuarter:
+			return t.AddDate(0, 3*factor, 0)
 		case timeUnitMonth:
 			return t.AddDate(0, factor, 0)
 		case timeUnitWeek:
@@ -296,6 +299,9 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 		switch u {
 		case timeUnitYear:
 			return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
+		case timeUnitQuarter:
+			firstOfQuarter := t.Month()/3*3 + 1
+			return time.Date(t.Year(), firstOfQuarter, 1, 0, 0, 0, 0, t.Location())
 		case timeUnitMonth:
 			return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
 		case timeUnitWeek:

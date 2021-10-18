@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/timberio/go-datemath"
+	"github.com/vectordotdev/go-datemath"
 )
 
 // much are based on tests from Elasticsearch to ensure we handle dates in a compatible manner
@@ -179,6 +179,19 @@ func TestParseAndEvaluate(t *testing.T) {
 
 			in:  "now/m",
 			out: "2014-11-18T14:27:59.999Z",
+		},
+		{
+			now: "2014-11-18T14:27:32.000Z",
+
+			in:  "now/Q",
+			out: "2014-10-01T00:00:00.000Z",
+		},
+		{
+			now:     "2014-11-18T14:27:32.000Z",
+			roundUp: true,
+
+			in:  "now/Q",
+			out: "2014-12-31T23:59:59.999Z",
 		},
 
 		// epoch times

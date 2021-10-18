@@ -99,10 +99,12 @@ eof \0
 "/"
 	return tBACKSLASH
 
-[yMwdbhHms]
+[yMwdbhHmsQ]
   switch l.buf[0] {
     case 'y':
       lval.unit = timeUnitYear
+    case 'Q':
+      lval.unit = timeUnitQuarter
     case 'M':
       lval.unit = timeUnitMonth
     case 'w':
