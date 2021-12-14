@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/timberio/go-datemath"
+	"github.com/vectordotdev/go-datemath"
 )
 
 // much are based on tests from Elasticsearch to ensure we handle dates in a compatible manner
@@ -16,6 +16,7 @@ func TestParseAndEvaluate(t *testing.T) {
 		out             string
 		err             error
 		businessDayFunc func(time.Time) bool
+		fiscalYear      time.Time
 
 		now      string
 		location *time.Location
@@ -58,8 +59,16 @@ func TestParseAndEvaluate(t *testing.T) {
 			out: "2015-11-18T00:00:00.000Z",
 		},
 		{
+			in:  "2014-11-18||+fy",
+			out: "2015-11-18T00:00:00.000Z",
+		},
+		{
 			in:  "2014-11-18||-2y",
 			out: "2012-11-18T00:00:00.000Z",
+		},
+		{
+			in:  "2014-11-18||+1fQ",
+			out: "2015-02-18T00:00:00.000Z",
 		},
 		{
 			in:  "2014-11-18||+3M",
@@ -180,6 +189,83 @@ func TestParseAndEvaluate(t *testing.T) {
 			in:  "now/m",
 			out: "2014-11-18T14:27:59.999Z",
 		},
+		{
+			now: "2014-11-18T14:27:32.000Z",
+
+			in:  "now/Q",
+			out: "2014-10-01T00:00:00.000Z",
+		},
+		{
+			now: "2014-03-18T14:27:32.000Z",
+
+			in:  "now/Q",
+			out: "2014-01-01T00:00:00.000Z",
+		},
+		{
+			now:     "2014-11-18T14:27:32.000Z",
+			roundUp: true,
+
+			in:  "now/Q",
+			out: "2014-12-31T23:59:59.999Z",
+		},
+
+		// fiscal years and quarters
+		{
+			now:        "2014-11-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 2, 1, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fQ",
+			out: "2014-11-01T00:00:00.000Z",
+		},
+		{
+			now:        "2015-01-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 2, 1, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fQ",
+			out: "2014-11-01T00:00:00.000Z",
+		},
+		{
+			now:        "2015-01-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 12, 15, 12, 30, 0, 0, time.UTC),
+
+			in:  "now/fQ",
+			out: "2014-12-15T12:30:00.000Z",
+		},
+		{
+			now:        "2014-11-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 2, 1, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy",
+			out: "2014-02-01T00:00:00.000Z",
+		},
+		{
+			now:        "2015-02-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 4, 15, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy",
+			out: "2014-04-15T00:00:00.000Z",
+		},
+		{
+			now:        "2016-02-28T15:30:50.000Z",
+			fiscalYear: time.Date(0, 2, 29, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy",
+			out: "2015-03-01T00:00:00.000Z",
+		},
+		{
+			now:        "2017-02-28T15:30:50.000Z",
+			fiscalYear: time.Date(0, 2, 29, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy",
+			out: "2016-02-29T00:00:00.000Z",
+		},
+		{
+			now:        "2017-02-28T15:30:50.000Z",
+			fiscalYear: time.Date(0, 2, 29, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy+fy",
+			out: "2017-03-01T00:00:00.000Z",
+		},
 
 		// epoch times
 		{
@@ -284,7 +370,7 @@ func TestParseAndEvaluate(t *testing.T) {
 				location = tt.location
 			}
 
-			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location), datemath.WithBusinessDayFunc(tt.businessDayFunc), datemath.WithRoundUp(tt.roundUp))
+			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location), datemath.WithBusinessDayFunc(tt.businessDayFunc), datemath.WithRoundUp(tt.roundUp), datemath.WithStartOfFiscalYear(tt.fiscalYear))
 			switch {
 			case err == nil && tt.err != nil:
 				t.Errorf("ParseAndEvaluate(%+v) returned no error, expected error %q", tt.in, tt.err)

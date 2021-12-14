@@ -17,23 +17,26 @@ anchor date can optionally be followed by one or more date math expressions, for
 	now/d	Round down to the nearest day
 
 The supported time units are:
-	y Years
-	M Months
-	w Weeks
-	d Days
-	b Business Days (excludes Saturday and Sunday by default, use WithBusinessDayFunc to override)
-	h Hours
-	H Hours
-	m Minutes
-	s Seconds
+	y  Years
+	fy Fiscal years (by default same as a regular year, use WithStartOfFiscalYear to override)
+	Q  Annual quarters
+	fQ Fiscal quarters (by default same as a regular annual quarter, use WithStartOfFiscalYear to override)
+	M  Months
+	w  Weeks
+	d  Days
+	b  Business Days (excludes Saturday and Sunday by default, use WithBusinessDayFunc to override)
+	h  Hours
+	H  Hours
+	m  Minutes
+	s  Seconds
 
 Compatibility with Elasticsearch datemath
 
 This package aims to be a superset of Elasticsearch's expressions. That is, any datemath expression that is valid for
 Elasticsearch should evaluate in the same way here.
 
-Currently the package does not support expressions outside of those also considered valid by Elasticsearch, but this may
-change in the future to include additional functionality.
+In addition to the expressions supported by Elasticsearch, this package also supports business days, annual quarters,
+and fiscal years/quarters.
 */
 package datemath
 
@@ -51,17 +54,20 @@ func init() {
 
 var missingTimeZone = time.FixedZone("MISSING", 0)
 
-type timeUnit rune
+type timeUnit string
 
 const (
-	timeUnitYear        = timeUnit('y')
-	timeUnitMonth       = timeUnit('M')
-	timeUnitWeek        = timeUnit('w')
-	timeUnitDay         = timeUnit('d')
-	timeUnitBusinessDay = timeUnit('b')
-	timeUnitHour        = timeUnit('h')
-	timeUnitMinute      = timeUnit('m')
-	timeUnitSecond      = timeUnit('s')
+	timeUnitYear          = timeUnit('y')
+	timeUnitFiscalYear    = timeUnit("fy")
+	timeUnitQuarter       = timeUnit('Q')
+	timeUnitFiscalQuarter = timeUnit("fQ")
+	timeUnitMonth         = timeUnit('M')
+	timeUnitWeek          = timeUnit('w')
+	timeUnitDay           = timeUnit('d')
+	timeUnitBusinessDay   = timeUnit('b')
+	timeUnitHour          = timeUnit('h')
+	timeUnitMinute        = timeUnit('m')
+	timeUnitSecond        = timeUnit('s')
 )
 
 func (u timeUnit) String() string {
@@ -135,6 +141,8 @@ type Options struct {
 	// Defaults to false
 	RoundUp bool
 
+	StartOfFiscalYear time.Time
+
 	BusinessDayFunc func(time.Time) bool
 }
 
@@ -163,6 +171,14 @@ func WithLocation(l *time.Location) func(*Options) {
 func WithRoundUp(b bool) func(*Options) {
 	return func(o *Options) {
 		o.RoundUp = b
+	}
+}
+
+// WithStartOfFiscalYear sets the beginning of the fiscal year.
+// The year is ignored.
+func WithStartOfFiscalYear(t time.Time) func(*Options) {
+	return func(o *Options) {
+		o.StartOfFiscalYear = t
 	}
 }
 
@@ -250,8 +266,10 @@ type timeAdjuster func(time.Time, Options) time.Time
 func addUnits(factor int, u timeUnit) func(time.Time, Options) time.Time {
 	return func(t time.Time, options Options) time.Time {
 		switch u {
-		case timeUnitYear:
+		case timeUnitYear, timeUnitFiscalYear:
 			return t.AddDate(factor, 0, 0)
+		case timeUnitQuarter, timeUnitFiscalQuarter:
+			return t.AddDate(0, 3*factor, 0)
 		case timeUnitMonth:
 			return t.AddDate(0, factor, 0)
 		case timeUnitWeek:
@@ -296,6 +314,22 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 		switch u {
 		case timeUnitYear:
 			return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
+		case timeUnitFiscalYear:
+			return firstDayOfFiscalYear(t, options.StartOfFiscalYear)
+		case timeUnitQuarter:
+			firstOfQuarter := (t.Month()-1)/3*3 + 1
+			return time.Date(t.Year(), firstOfQuarter, 1, 0, 0, 0, 0, t.Location())
+		case timeUnitFiscalQuarter:
+			firstDay := firstDayOfFiscalYear(t, options.StartOfFiscalYear)
+			var mDelta int
+			if t.Month() > firstDay.Month() {
+				mDelta = int(t.Month() - firstDay.Month())
+			} else {
+				mDelta = int(t.Month() + 12 - firstDay.Month())
+			}
+			mDelta = mDelta / 3 * 3
+
+			return firstDay.AddDate(0, mDelta, 0)
 		case timeUnitMonth:
 			return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
 		case timeUnitWeek:
@@ -327,6 +361,14 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 
 func daysIn(m time.Month, year int) int {
 	return time.Date(year, m+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
+func firstDayOfFiscalYear(t time.Time, fy time.Time) time.Time {
+	d := time.Date(t.Year(), fy.Month(), fy.Day(), fy.Hour(), fy.Minute(), fy.Second(), fy.Nanosecond(), t.Location())
+	if d.After(t) {
+		d = time.Date(t.Year()-1, fy.Month(), fy.Day(), fy.Hour(), fy.Minute(), fy.Second(), fy.Nanosecond(), t.Location())
+	}
+	return d
 }
 
 // lexerWrapper wraps the golex generated wrapper to store the parsed expression for later and provide needed data to

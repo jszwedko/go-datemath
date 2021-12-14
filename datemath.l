@@ -99,10 +99,12 @@ eof \0
 "/"
 	return tBACKSLASH
 
-[yMwdbhHms]
+[yMwdbhHmsQ]
   switch l.buf[0] {
     case 'y':
       lval.unit = timeUnitYear
+    case 'Q':
+      lval.unit = timeUnitQuarter
     case 'M':
       lval.unit = timeUnitMonth
     case 'w':
@@ -121,6 +123,14 @@ eof \0
         panic(fmt.Sprintf("unknown time unit: %q", l.buf[0]))
   }
 	return tUNIT
+
+"fy"
+  lval.unit = timeUnitFiscalYear
+  return tUNIT
+
+"fQ"
+  lval.unit = timeUnitFiscalQuarter
+  return tUNIT
 
 \.
 	return tDOT

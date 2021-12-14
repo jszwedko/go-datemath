@@ -7,7 +7,8 @@ This library relies on [goyacc](https://godoc.org/golang.org/x/tools/cmd/goyacc)
 
 To install, run:
 
-* `go get golang.org/x/tools/cmd/goyacc modernc.org/golex`
+* `go install golang.org/x/tools/cmd/goyacc@latest`
+* `go install modernc.org/golex@latest`
 
 After modifying either the `datemath.l` or `datemath.y` you can rerun `go generate`.
 

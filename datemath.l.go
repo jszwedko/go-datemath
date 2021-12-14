@@ -70,8 +70,6 @@ yystate0:
 
 	goto yystart1
 
-	goto yystate0 // silence unused label error
-	goto yystate1 // silence unused label error
 yystate1:
 	l.next()
 yystart1:
@@ -88,7 +86,7 @@ yystart1:
 		goto yystate7
 	case l.current == ':':
 		goto yystate9
-	case l.current == 'H' || l.current == 'M' || l.current == 'b' || l.current == 'd' || l.current == 'h' || l.current == 'm' || l.current == 's' || l.current == 'w' || l.current == 'y':
+	case l.current == 'H' || l.current == 'M' || l.current == 'Q' || l.current == 'b' || l.current == 'd' || l.current == 'h' || l.current == 'm' || l.current == 's' || l.current == 'w' || l.current == 'y':
 		goto yystate10
 	case l.current == 'T':
 		goto yystate11
@@ -96,23 +94,25 @@ yystart1:
 		goto yystate12
 	case l.current == '\x00':
 		goto yystate2
-	case l.current == 'n':
+	case l.current == 'f':
 		goto yystate13
+	case l.current == 'n':
+		goto yystate16
 	case l.current == '|':
-		goto yystate17
+		goto yystate20
 	case l.current >= '0' && l.current <= '9':
 		goto yystate8
-	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= '*' || l.current == ',' || l.current >= ';' && l.current <= 'G' || l.current >= 'I' && l.current <= 'L' || l.current >= 'N' && l.current <= 'S' || l.current >= 'U' && l.current <= 'Y' || l.current >= '[' && l.current <= 'a' || l.current == 'c' || l.current >= 'e' && l.current <= 'g' || l.current >= 'i' && l.current <= 'l' || l.current >= 'o' && l.current <= 'r' || l.current >= 't' && l.current <= 'v' || l.current == 'x' || l.current == 'z' || l.current == '{' || l.current >= '}' && l.current <= 'ÿ':
+	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= '*' || l.current == ',' || l.current >= ';' && l.current <= 'G' || l.current >= 'I' && l.current <= 'L' || l.current >= 'N' && l.current <= 'P' || l.current == 'R' || l.current == 'S' || l.current >= 'U' && l.current <= 'Y' || l.current >= '[' && l.current <= 'a' || l.current == 'c' || l.current == 'e' || l.current == 'g' || l.current >= 'i' && l.current <= 'l' || l.current >= 'o' && l.current <= 'r' || l.current >= 't' && l.current <= 'v' || l.current == 'x' || l.current == 'z' || l.current == '{' || l.current >= '}' && l.current <= 'ÿ':
 		goto yystate3
 	}
 
 yystate2:
 	l.next()
-	goto yyrule12
+	goto yyrule14
 
 yystate3:
 	l.next()
-	goto yyrule14
+	goto yyrule16
 
 yystate4:
 	l.next()
@@ -124,7 +124,7 @@ yystate5:
 
 yystate6:
 	l.next()
-	goto yyrule9
+	goto yyrule11
 
 yystate7:
 	l.next()
@@ -144,50 +144,69 @@ yystate10:
 
 yystate11:
 	l.next()
-	goto yyrule10
+	goto yyrule12
 
 yystate12:
 	l.next()
-	goto yyrule11
+	goto yyrule13
 
 yystate13:
 	l.next()
 	switch {
 	default:
-		goto yyrule14
-	case l.current == 'o':
+		goto yyrule16
+	case l.current == 'Q':
 		goto yystate14
+	case l.current == 'y':
+		goto yystate15
 	}
 
 yystate14:
 	l.next()
-	switch {
-	default:
-		goto yyabort
-	case l.current == 'w':
-		goto yystate16
-	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= 'v' || l.current >= 'x' && l.current <= 'ÿ':
-		goto yystate15
-	}
+	goto yyrule10
 
 yystate15:
 	l.next()
-	goto yyrule13
+	goto yyrule9
 
 yystate16:
 	l.next()
-	goto yyrule2
+	switch {
+	default:
+		goto yyrule16
+	case l.current == 'o':
+		goto yystate17
+	}
 
 yystate17:
 	l.next()
 	switch {
 	default:
-		goto yyrule14
-	case l.current == '|':
+		goto yyabort
+	case l.current == 'w':
+		goto yystate19
+	case l.current >= '\x01' && l.current <= '\t' || l.current >= '\v' && l.current <= 'v' || l.current >= 'x' && l.current <= 'ÿ':
 		goto yystate18
 	}
 
 yystate18:
+	l.next()
+	goto yyrule15
+
+yystate19:
+	l.next()
+	goto yyrule2
+
+yystate20:
+	l.next()
+	switch {
+	default:
+		goto yyrule16
+	case l.current == '|':
+		goto yystate21
+	}
+
+yystate21:
 	l.next()
 	goto yyrule6
 
@@ -231,12 +250,14 @@ yyrule7: // "/"
 
 		return tBACKSLASH
 	}
-yyrule8: // [yMwdbhHms]
+yyrule8: // [yMwdbhHmsQ]
 	{
 
 		switch l.buf[0] {
 		case 'y':
 			lval.unit = timeUnitYear
+		case 'Q':
+			lval.unit = timeUnitQuarter
 		case 'M':
 			lval.unit = timeUnitMonth
 		case 'w':
@@ -256,41 +277,65 @@ yyrule8: // [yMwdbhHms]
 		}
 		return tUNIT
 	}
-yyrule9: // \.
+yyrule9: // "fy"
+	{
+
+		lval.unit = timeUnitFiscalYear
+		return tUNIT
+	}
+yyrule10: // "fQ"
+	{
+
+		lval.unit = timeUnitFiscalQuarter
+		return tUNIT
+	}
+yyrule11: // \.
 	{
 
 		return tDOT
 	}
-yyrule10: // "T"
+yyrule12: // "T"
 	{
 
 		return tTIME_DELIMITER
 	}
-yyrule11: // "Z"
+yyrule13: // "Z"
 	{
 
 		return tUTC
 	}
-yyrule12: // {eof}
+yyrule14: // {eof}
 	{
 
 		return eofCode
 	}
-yyrule13: // no.
+yyrule15: // no.
 	{
 
 		return tINVALID_TOKEN
 	}
-yyrule14: // .
-	{
+yyrule16: // .
+	if true { // avoid go vet determining the below panic will not be reached
 
 		return tINVALID_TOKEN
 	}
 	panic("unreachable")
 
-	goto yyabort // silence unused label error
-
 yyabort: // no lexem recognized
+	//
+	// silence unused label errors for build and satisfy go vet reachability analysis
+	//
+	{
+		if false {
+			goto yyabort
+		}
+		if false {
+			goto yystate0
+		}
+		if false {
+			goto yystate1
+		}
+	}
 
 	// should never get here
 	panic("scanner internal error")
