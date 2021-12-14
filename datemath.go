@@ -312,19 +312,21 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 		case timeUnitYear:
 			return time.Date(t.Year(), 1, 1, 0, 0, 0, 0, t.Location())
 		case timeUnitFiscalYear:
-			fy := options.StartOfFiscalYear
-			firstDay := time.Date(t.Year(), fy.Month(), fy.Day(), fy.Hour(), fy.Minute(), fy.Second(), fy.Nanosecond(), t.Location())
-			if firstDay.After(t) {
-				firstDay = firstDay.AddDate(-1, 0, 0)
-			}
-			return firstDay
+			return firstDayOfFiscalYear(t, options.StartOfFiscalYear)
 		case timeUnitQuarter:
-			firstOfQuarter := t.Month()/3*3 + 1
+			firstOfQuarter := (t.Month()-1)/3*3 + 1
 			return time.Date(t.Year(), firstOfQuarter, 1, 0, 0, 0, 0, t.Location())
 		case timeUnitFiscalQuarter:
-			offset := (options.StartOfFiscalYear.Month()-1)%3 + 1
-			firstOfQuarter := t.Month()/3*3 + offset
-			return time.Date(t.Year(), firstOfQuarter, 1, 0, 0, 0, 0, t.Location())
+			firstDay := firstDayOfFiscalYear(t, options.StartOfFiscalYear)
+			var mDelta int
+			if t.Month() > firstDay.Month() {
+				mDelta = int(t.Month() - firstDay.Month())
+			} else {
+				mDelta = int(t.Month() + 12 - firstDay.Month())
+			}
+			mDelta = mDelta / 3 * 3
+
+			return firstDay.AddDate(0, mDelta, 0)
 		case timeUnitMonth:
 			return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
 		case timeUnitWeek:
@@ -356,6 +358,14 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 
 func daysIn(m time.Month, year int) int {
 	return time.Date(year, m+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
+func firstDayOfFiscalYear(t time.Time, fy time.Time) time.Time {
+	d := time.Date(t.Year(), fy.Month(), fy.Day(), fy.Hour(), fy.Minute(), fy.Second(), fy.Nanosecond(), t.Location())
+	if d.After(t) {
+		d = time.Date(t.Year()-1, fy.Month(), fy.Day(), fy.Hour(), fy.Minute(), fy.Second(), fy.Nanosecond(), t.Location())
+	}
+	return d
 }
 
 // lexerWrapper wraps the golex generated wrapper to store the parsed expression for later and provide needed data to

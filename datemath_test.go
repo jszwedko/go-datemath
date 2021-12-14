@@ -196,18 +196,40 @@ func TestParseAndEvaluate(t *testing.T) {
 			out: "2014-10-01T00:00:00.000Z",
 		},
 		{
+			now: "2014-03-18T14:27:32.000Z",
+
+			in:  "now/Q",
+			out: "2014-01-01T00:00:00.000Z",
+		},
+		{
 			now:     "2014-11-18T14:27:32.000Z",
 			roundUp: true,
 
 			in:  "now/Q",
 			out: "2014-12-31T23:59:59.999Z",
 		},
+
+		// fiscal years and quarters
 		{
 			now:        "2014-11-18T14:27:32.000Z",
 			fiscalYear: time.Date(0, 2, 1, 0, 0, 0, 0, time.UTC),
 
 			in:  "now/fQ",
 			out: "2014-11-01T00:00:00.000Z",
+		},
+		{
+			now:        "2015-01-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 2, 1, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fQ",
+			out: "2014-11-01T00:00:00.000Z",
+		},
+		{
+			now:        "2015-01-18T14:27:32.000Z",
+			fiscalYear: time.Date(0, 12, 15, 12, 30, 0, 0, time.UTC),
+
+			in:  "now/fQ",
+			out: "2014-12-15T12:30:00.000Z",
 		},
 		{
 			now:        "2014-11-18T14:27:32.000Z",
@@ -222,6 +244,27 @@ func TestParseAndEvaluate(t *testing.T) {
 
 			in:  "now/fy",
 			out: "2014-04-15T00:00:00.000Z",
+		},
+		{
+			now:        "2016-02-28T15:30:50.000Z",
+			fiscalYear: time.Date(0, 2, 29, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy",
+			out: "2015-03-01T00:00:00.000Z",
+		},
+		{
+			now:        "2017-02-28T15:30:50.000Z",
+			fiscalYear: time.Date(0, 2, 29, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy",
+			out: "2016-02-29T00:00:00.000Z",
+		},
+		{
+			now:        "2017-02-28T15:30:50.000Z",
+			fiscalYear: time.Date(0, 2, 29, 0, 0, 0, 0, time.UTC),
+
+			in:  "now/fy+fy",
+			out: "2017-03-01T00:00:00.000Z",
 		},
 
 		// epoch times
