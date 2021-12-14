@@ -17,23 +17,26 @@ anchor date can optionally be followed by one or more date math expressions, for
 	now/d	Round down to the nearest day
 
 The supported time units are:
-	y Years
-	M Months
-	w Weeks
-	d Days
-	b Business Days (excludes Saturday and Sunday by default, use WithBusinessDayFunc to override)
-	h Hours
-	H Hours
-	m Minutes
-	s Seconds
+	y  Years
+	fy Fiscal years (by default same as a regular year, use WithStartOfFiscalYear to override)
+	Q  Annual quarters
+	fQ Fiscal quarters (by default same as a regular annual quarter, use WithStartOfFiscalYear to override)
+	M  Months
+	w  Weeks
+	d  Days
+	b  Business Days (excludes Saturday and Sunday by default, use WithBusinessDayFunc to override)
+	h  Hours
+	H  Hours
+	m  Minutes
+	s  Seconds
 
 Compatibility with Elasticsearch datemath
 
 This package aims to be a superset of Elasticsearch's expressions. That is, any datemath expression that is valid for
 Elasticsearch should evaluate in the same way here.
 
-Currently the package does not support expressions outside of those also considered valid by Elasticsearch, but this may
-change in the future to include additional functionality.
+In addition to the expressions supported by Elasticsearch, this package also supports business days, annual quarters,
+and fiscal years/quarters.
 */
 package datemath
 
