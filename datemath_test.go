@@ -266,6 +266,13 @@ func TestParseAndEvaluate(t *testing.T) {
 			in:  "now/fy+fy",
 			out: "2017-03-01T00:00:00.000Z",
 		},
+		{
+			now:        "2022-01-04T10:10:10.000Z",
+			fiscalYear: time.Time{},
+
+			in:  "now/fQ",
+			out: "2022-01-01T00:00:00.000Z",
+		},
 
 		// epoch times
 		{
