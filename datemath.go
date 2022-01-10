@@ -322,7 +322,7 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 		case timeUnitFiscalQuarter:
 			firstDay := firstDayOfFiscalYear(t, options.StartOfFiscalYear)
 			var mDelta int
-			if t.Month() > firstDay.Month() {
+			if t.Month() >= firstDay.Month() {
 				mDelta = int(t.Month() - firstDay.Month())
 			} else {
 				mDelta = int(t.Month() + 12 - firstDay.Month())
