@@ -17,6 +17,7 @@ func TestParseAndEvaluate(t *testing.T) {
 		err             error
 		businessDayFunc func(time.Time) bool
 		fiscalYear      time.Time
+		startOfWeek     func() time.Weekday
 
 		now      string
 		location *time.Location
@@ -340,6 +341,64 @@ func TestParseAndEvaluate(t *testing.T) {
 			out: "2014-12-26T14:27:32.000Z",
 		},
 
+		// weekdays
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-06T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Friday
+			},
+		},
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-07T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Saturday
+			},
+		},
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-08T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Sunday
+			},
+		},
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-09T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Monday
+			},
+		},
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-10T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Tuesday
+			},
+		},
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-11T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Wednesday
+			},
+		},
+		{
+			in:  "2020-03-12||/w",
+			out: "2020-03-12T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Thursday
+			},
+		},
+		{
+			in:  "2020-01-01||/w",
+			out: "2019-12-26T00:00:00Z",
+			startOfWeek: func() time.Weekday {
+				return time.Thursday
+			},
+		},
+
 		// errors
 		{
 			in:  "2014-05-35T20:21:21Z",
@@ -377,7 +436,22 @@ func TestParseAndEvaluate(t *testing.T) {
 				location = tt.location
 			}
 
-			out, err := datemath.ParseAndEvaluate(tt.in, datemath.WithNow(now), datemath.WithLocation(location), datemath.WithBusinessDayFunc(tt.businessDayFunc), datemath.WithRoundUp(tt.roundUp), datemath.WithStartOfFiscalYear(tt.fiscalYear))
+			opts := []func(*datemath.Options){
+				datemath.WithNow(now),
+				datemath.WithLocation(location),
+				datemath.WithBusinessDayFunc(tt.businessDayFunc),
+				datemath.WithRoundUp(tt.roundUp),
+				datemath.WithStartOfFiscalYear(tt.fiscalYear),
+			}
+
+			if tt.startOfWeek != nil {
+				opts = append(opts, datemath.WithStartOfWeek(tt.startOfWeek()))
+			}
+
+			out, err := datemath.ParseAndEvaluate(
+				tt.in,
+				opts...,
+			)
 			switch {
 			case err == nil && tt.err != nil:
 				t.Errorf("ParseAndEvaluate(%+v) returned no error, expected error %q", tt.in, tt.err)
