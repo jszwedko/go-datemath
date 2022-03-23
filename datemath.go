@@ -334,10 +334,11 @@ func truncateUnits(u timeUnit) func(time.Time, Options) time.Time {
 			return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
 		case timeUnitWeek:
 			diff := int(t.Weekday() - options.StartOfWeek)
+			today := time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 			if diff < 0 {
-				return time.Date(t.Year(), t.Month(), t.Day()+diff-1, 0, 0, 0, 0, t.Location())
+				today = today.AddDate(0, 0, -7)
 			}
-			return time.Date(t.Year(), t.Month(), t.Day()-diff, 0, 0, 0, 0, t.Location())
+			return today.AddDate(0, 0, -diff)
 		case timeUnitDay:
 			return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 		case timeUnitHour:
