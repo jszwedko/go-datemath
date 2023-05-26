@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vectordotdev/go-datemath"
+	"github.com/jszwedko/go-datemath"
 )
 
 // much are based on tests from Elasticsearch to ensure we handle dates in a compatible manner
